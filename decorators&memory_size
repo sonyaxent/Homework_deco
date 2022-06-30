@@ -1,0 +1,64 @@
+import functools
+import sys
+from collections import OrderedDict
+import time
+
+import requests
+
+def profile(msg='Elapsed time', file=sys.stdout):
+    def internal(f):
+        @functools.wraps(f)
+        def deco(*args, **kwargs):
+            start = time.time()
+            result = f(*args, **kwargs)
+            print(msg, f'({f.__name__}): {time.time() - start}s', file=file)
+            return result
+        return deco
+    return internal
+
+
+def profile_memory(f):
+    def internal(*args, **kwargs):
+        result = f(*args, **kwargs)
+        print(f'Memory of ({f.__name__}): {sys.getsizeof(result)}')
+        return result
+    return internal
+
+def cache(max_limit=500):
+    def internal(f):
+        @functools.wraps(f)
+        def deco(*args, **kwargs):
+            cache_key = (args, tuple(kwargs.items()))
+            if cache_key in deco._cache:
+                # переносимо в кінець списку
+                deco._cache.move_to_end(cache_key, last=True)
+                return deco._cache[cache_key]
+
+            result = f(*args, **kwargs)
+            # видаляємо якшо досягли ліміта
+            if len(deco._cache) >= max_limit:
+                # видаляємо найменший елемент
+                deco._cache.pop(min(deco._cache))
+            deco._cache[cache_key] = result
+            return result
+
+        deco._cache = OrderedDict()
+        return deco
+
+    return internal
+
+@profile(msg='Elapsed time')
+@cache(max_limit=500)
+@profile_memory
+def fetch_url(url, first_n=120):
+    """Fetch a given url"""
+    res = requests.get(url)
+    return res.content[:first_n] if first_n else res.content
+
+fetch_url('https://google.com')
+fetch_url('https://google.com')
+fetch_url('https://google.com')
+fetch_url('https://ithillel.ua')
+fetch_url('https://dou.ua')
+fetch_url('https://ain.ua')
+fetch_url('https://youtube.com')

@@ -1,9 +1,10 @@
 import functools
 import sys
-from collections import OrderedDict
 import time
+from collections import OrderedDict
 
 import requests
+
 
 def profile(msg='Elapsed time', file=sys.stdout):
     def internal(f):
@@ -13,7 +14,9 @@ def profile(msg='Elapsed time', file=sys.stdout):
             result = f(*args, **kwargs)
             print(msg, f'({f.__name__}): {time.time() - start}s', file=file)
             return result
+
         return deco
+
     return internal
 
 
@@ -22,7 +25,9 @@ def profile_memory(f):
         result = f(*args, **kwargs)
         print(f'Memory of ({f.__name__}): {sys.getsizeof(result)}')
         return result
+
     return internal
+
 
 def cache(max_limit=500):
     def internal(f):
@@ -47,6 +52,7 @@ def cache(max_limit=500):
 
     return internal
 
+
 @profile(msg='Elapsed time')
 @cache(max_limit=500)
 @profile_memory
@@ -55,10 +61,17 @@ def fetch_url(url, first_n=120):
     res = requests.get(url)
     return res.content[:first_n] if first_n else res.content
 
-fetch_url('https://google.com')
-fetch_url('https://google.com')
-fetch_url('https://google.com')
-fetch_url('https://ithillel.ua')
-fetch_url('https://dou.ua')
-fetch_url('https://ain.ua')
-fetch_url('https://youtube.com')
+
+if __name__ == '__main__':
+    # Без цієї конструкції імпортований модуль виконується одразу при імпорті
+    # У більшості випадків треба використовувати цю конструкцію та викликати
+    # об'явлені функції у ній.
+    #
+    # У PyCharm є шорткат для цього. Просто пишеш "main" та Enter
+    fetch_url('https://google.com')
+    fetch_url('https://google.com')
+    fetch_url('https://google.com')
+    fetch_url('https://ithillel.ua')
+    fetch_url('https://dou.ua')
+    fetch_url('https://ain.ua')
+    fetch_url('https://youtube.com')

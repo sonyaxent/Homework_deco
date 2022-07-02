@@ -14,6 +14,7 @@ def profile_memory(msg='Memory info'):
             result_to_memorize = tuple(result)
             mem = memory_usage(proc=result_to_memorize)
             print(msg, f'({f.__name__}):  {mem}')
+
             return result
 
         return deco
